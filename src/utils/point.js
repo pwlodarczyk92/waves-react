@@ -58,6 +58,15 @@ const protoPoint = {
   round() {
     return point(Math.round(this.x), Math.round(this.y));
   },
+  floor() {
+    return point(Math.floor(this.x), Math.floor(this.y));
+  },
+  ceil() {
+    return point(Math.ceil(this.x), Math.ceil(this.y));
+  },
+  random() {
+    return point(Math.random()*this.x, Math.random()*this.y);
+  },
 
   inConcave(cycle) {
     let angle = 0;
@@ -122,7 +131,6 @@ function point(x, y) {
 }
 point.NEG_INFTY = point(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
 point.POS_INFTY = point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-
 let pointType = PropTypes.instanceOf(Point);
 
 export {
