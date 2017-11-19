@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {point} from "../utils/point";
 import {Clock} from "./Clock";
+import {Wrapper} from "../wasm/board";
 
 class App extends Component {
   constructor(props) {
@@ -12,53 +13,32 @@ class App extends Component {
 
     this.start = this.start.bind(this);
     this.step = this.step.bind(this);
-    this.stop = this.stop.bind(this);
-    
-    this.radialPatch = this.radialPatch.bind(this);
-    this.movePatch = this.movePatch.bind(this);
-    this.clickPatch = this.clickPatch.bind(this);
+
+    this.applyMove = this.applyMove.bind(this);
+    this.applyPress = this.applyPress.bind(this);
 
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onMousePress = this.onMousePress.bind(this);
     this.canvasPos = this.canvasPos.bind(this);
 
     this.ref = null;
-    this.mouseRadius = 5;
-    this.pressRadius = 10;
+    this.lastTime = new Date().getTime();
+    this.iters = 0;
     this.props.onModuleLoaded(this.saveModule);
   }
 
   saveModule() {
     this.moduleLoaded = true;
 
-    this.set_timestep = this.props.Module.cwrap('set_timestep', null, ['number', 'number']);
-    this.get_time = this.props.Module.cwrap('get_time', 'number', ['number']);
+    this.wrapper = new Wrapper(this.props.Module);
+    this.board = this.wrapper.makeRegularBoard(this.props.size, this.props.timestep, this.props.acceleration, this.props.damping);
+    this.image = this.wrapper.makeImage(this.props.size);
 
-    this.make_board = this.props.Module.cwrap('make_regular_board', 'number', ['number', 'number', 'number', 'number', 'number']);
-    this.make_patch = this.props.Module.cwrap('make_table', 'number', ['number', 'number', 'number']);
-    this.make_image = this.props.Module.cwrap('make_image', 'number', ['number', 'number']);
-
-    this.velocity_patch = this.props.Module.cwrap('velocity_table', 'number', ['number']);
-    this.deflection_patch = this.props.Module.cwrap('deflection_table', 'number', ['number']);
-
-    this.increment = this.props.Module.cwrap('increment', null, ['number']);
-    this.draw_board = this.props.Module.cwrap('draw_board', null, ['number', 'number']);
-    this.apply = this.props.Module.cwrap('apply_patch', null, ['number', 'number', 'number', 'number', 'number']);
-
-    this.board_ptr = this.make_board(this.props.size.x, this.props.size.y, this.props.acceleration, this.props.damping, this.props.timestep);
-    this.velocity_ptr = this.velocity_patch(this.board_ptr);
-    this.deflection_ptr = this.deflection_patch(this.board_ptr);
-
-    this.image_ptr = this.make_image(this.props.size.x, this.props.size.y);
-    this.image_array = new Uint8ClampedArray(this.props.Module.HEAPU8.buffer, this.image_ptr, this.props.size.x * this.props.size.y * 4);
-    this.move_ptr = this.radialPatch(this.mouseRadius);
-    this.press_ptr = this.radialPatch(this.pressRadius);
+    const radfun = (dp, radius) => 0.5*(Math.cos(Math.PI * dp.norm() / radius) + 1);
+    this.movePatch = this.wrapper.makeRadialPatch(this.props.mouseRadius, radfun);
+    this.pressPatch = this.wrapper.makeRadialPatch(this.props.pressRadius, radfun);
 
     this.start();
-  }
-
-  ready() {
-    return this.moduleLoaded && this.ref
   }
 
   saveRef(ref) {
@@ -72,14 +52,13 @@ class App extends Component {
     }
   }
 
-  start() {
-    if (!this.ready())
-      return;
+  ready() {
+    return this.moduleLoaded && this.ref
+  }
 
-    this.forceUpdate();
-    this.lastTime = new Date().getTime();
-    this.iters = 0;
-    this.incrs = 0;
+  start() {
+    if (this.ready())
+      this.forceUpdate();
   }
 
   step() {
@@ -88,58 +67,30 @@ class App extends Component {
       const newTime = new Date().getTime();
       console.log((newTime - this.lastTime));
       this.lastTime = newTime;
+      this.board.deflectionTable.normalize();
     }
 
     for (let i = 0; i < this.props.spf; i++)
       this.incr();
 
-    this.draw_board(this.board_ptr, this.image_ptr);
-    const imgData = new ImageData(this.image_array, this.props.size.x, this.props.size.y);
-    this.ctx.putImageData(imgData, 0, 0);
+    this.image.draw(this.board.deflectionTable);
+    this.image.toContext(this.ctx);
   }
 
   incr() {
-    const p = this.props.size.mul(0.5, 0.5).floor().sub(point(this.mouseRadius, this.mouseRadius));
-    const amplitude = this.props.timestep*4;
-    const phase = this.get_time(this.board_ptr)*0.04;
-    this.apply(this.deflection_ptr, this.move_ptr, p.x, p.y, Math.sin(phase)*amplitude);
-    this.increment(this.board_ptr);
+    //const p = this.props.size.mul(0.5, 0.5).floor().sub(point(this.mouseRadius, this.mouseRadius));
+    //const amplitude = this.props.timestep*4;
+    //const phase = this.get_time(this.board_ptr)*0.04;
+    //this.apply(this.deflection_ptr, this.move_ptr, p.x, p.y, Math.sin(phase)*amplitude);
+    this.board.increment();
   }
 
-  stop() {
-    window.clearInterval(this.stepId);
+  applyPress(pos) {
+    this.pressPatch.applyPatch(this.board.deflectionTable, pos, this.props.pressRadius);
   }
 
-
-  radialPatch(radius) {
-    const size = radius*2+1;
-    const view = new Float32Array(size * size);
-    const factor = 4/(radius * radius);
-    for (let dx = -radius; dx <= radius; dx++) {
-      for (let dy = -radius; dy <= radius; dy++) {
-        const dp = point(dx, dy);
-        const p = dp.add(point(radius, radius));
-        if (dp.norm() <= radius)
-          view[size * p.y + p.x] = factor * (Math.cos(Math.PI * dp.norm() / radius) + 1);
-        else
-          view[size * p.y + p.x] = 0;
-      }
-    }
-
-    const bytes = view.length*view.BYTES_PER_ELEMENT;
-    const ptr = this.props.Module._malloc(bytes);
-    const heap = new Float32Array(this.props.Module.HEAPU32.buffer, ptr, bytes);
-    heap.set(view);
-
-    return this.make_patch(size, size, ptr);
-  }
-
-  clickPatch(pos) {
-    this.apply(this.deflection_ptr, this.press_ptr, pos.x - this.pressRadius, pos.y - this.pressRadius, this.pressRadius*this.pressRadius);
-  }
-
-  movePatch(pos) {
-    this.apply(this.deflection_ptr, this.move_ptr, pos.x - this.mouseRadius, pos.y - this.mouseRadius, 1);
+  applyMove(pos) {
+    this.movePatch.applyPatch(this.board.deflectionTable, pos, 1);
   }
 
   onMouseMove(event) {
@@ -152,12 +103,12 @@ class App extends Component {
     if (
       this.lastMoveTime === undefined ||
       newMoveTime - this.lastMoveTime > 250) {
-      this.movePatch(newPos);
+      this.applyMove(newPos);
     } else if (this.lastPos.norm(newPos) > 0.5) {
       const num = Math.floor(this.lastPos.norm(newPos));
-      for (let i = 0; i <= num; i++) {
+      for (let i = 0; i < num; i++) {
         const p = newPos.affine(i/num, this.lastPos).round();
-        this.movePatch(p);
+        this.applyMove(p);
       }
     }
     this.lastPos = newPos;
@@ -168,7 +119,7 @@ class App extends Component {
     if (!this.moduleLoaded || !this.ref)
       return;
     const newPos = this.canvasPos(event, this.ref);
-    this.clickPatch(newPos);
+    this.applyPress(newPos);
   }
 
   canvasPos(event, canvas) {
@@ -184,7 +135,11 @@ class App extends Component {
     console.log(nextProps);
     console.log(this.props);
     if (nextProps.timestep !== this.props.timestep)
-      this.set_timestep(this.board_ptr, nextProps.timestep);
+      this.board.timestep = nextProps.timestep;
+    if (nextProps.acceleration !== this.props.acceleration)
+      this.board.acceleration = nextProps.acceleration;
+    if (nextProps.damping !== this.props.damping)
+      this.board.damping = nextProps.damping;
   }
 
   render() {
@@ -213,8 +168,8 @@ class App extends Component {
         {
           !this.props.rain ? null :
               <Clock
-                delay={1000 / this.props.fps}
-                function={() => {this.clickPatch(this.props.size.random().floor());}}/>
+                delay={1000 / 3}
+                function={() => {this.applyPress(this.props.size.random().floor());}}/>
         }
       </div>
     );
