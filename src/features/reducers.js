@@ -10,7 +10,7 @@ const initial = {
   trace: true,
   timestep: 0.25,
   acceleration: 1.0,
-  damping:0.005,
+  damping:0.001,
   fps: 40,
   spf: 4,
   dps: 1,

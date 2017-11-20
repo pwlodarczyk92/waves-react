@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 
 class Clock extends Component {
-  constructor(props){
-    super(props);
-  }
   componentDidMount() {
     this.intervalId = setInterval(this.props.function, this.props.delay);
   }

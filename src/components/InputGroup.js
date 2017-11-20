@@ -1,21 +1,17 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import './InputGroup.css';
 class InputGroup extends Component {
   render() {
     return (
-      <div Class='showHide'>
+      <div className='showHide'>
         {this.props.name}
-        <input type="checkbox" Class="toggleGroup"/>
-        <div Class="fieldsetContainer">
+        <input type="checkbox" className="toggleGroup"/>
+        <div className="fieldsetContainer">
           {this.props.children}
         </div>
       </div>
     );
   }
 }
-
-InputGroup.propTypes = {};
-InputGroup.defaultProps = {};
 
 export default InputGroup;

@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import Board from "./Board";
 import InputGroup from "./InputGroup";
 
@@ -10,36 +9,38 @@ class BoardControl extends Component {
       <div style={{display: "flex"}}>
         <Board {...this.props}/>
         <div style={{flexGrow: 1}}>
-        Timestep:
-        <input
-          type="number" step="0.01" min="-1" max="1"
-          value={this.props.timestep}
-          onChange={(e) => this.props.setTimestep(parseFloat(e.target.value))}/> <br/>
-        Damping:
-        <input
-          type="number" step="0.0005" min="0" max="0.1"
-          value={this.props.damping}
-          onChange={(e) => this.props.setDamping(parseFloat(e.target.value))}/> <br/>
-        Pause:
-        <input
-          type="checkbox"
-          checked={this.props.paused}
-          onChange={(e) => this.props.togglePaused(e.target.checked)}/> <br/>
-        Mouse trace:
-        <input
-          type="checkbox"
-          checked={this.props.trace}
-          onChange={(e) => this.props.toggleTrace(e.target.checked)}/> <br/>
-        Rain:
-        <input
-          type="checkbox"
-          checked={this.props.rain}
-          onChange={(e) => this.props.toggleRain(e.target.checked)}/> <br/>
-        Drops per second:
-        <input
-          type="number" step="0.1" min="0" max="10"
-          value={this.props.dps}
-          onChange={(e) => this.props.setDPS(parseFloat(e.target.value))}/> <br/>
+        <InputGroup name={"Basic: "}>
+          Timestep:
+          <input
+            type="number" step="0.01" min="-1" max="1"
+            value={this.props.timestep}
+            onChange={(e) => this.props.setTimestep(parseFloat(e.target.value))}/> <br/>
+          Damping:
+          <input
+            type="number" step="0.0005" min="0" max="0.1"
+            value={this.props.damping}
+            onChange={(e) => this.props.setDamping(parseFloat(e.target.value))}/> <br/>
+          Pause:
+          <input
+            type="checkbox"
+            checked={this.props.paused}
+            onChange={(e) => this.props.togglePaused(e.target.checked)}/> <br/>
+          Mouse trace:
+          <input
+            type="checkbox"
+            checked={this.props.trace}
+            onChange={(e) => this.props.toggleTrace(e.target.checked)}/> <br/>
+          Rain:
+          <input
+            type="checkbox"
+            checked={this.props.rain}
+            onChange={(e) => this.props.toggleRain(e.target.checked)}/> <br/>
+          Drops per second:
+          <input
+            type="number" step="0.1" min="0" max="10"
+            value={this.props.dps}
+            onChange={(e) => this.props.setDPS(parseFloat(e.target.value))}/> <br/>
+        </InputGroup>
         <InputGroup name={"Advanced: "}>
           Acceleration:
           <input
@@ -50,12 +51,12 @@ class BoardControl extends Component {
           <input
             type="number" step="1" min="10" max="120"
             value={this.props.fps}
-            onChange={(e) => this.props.setFPS(parseInt(e.target.value))}/> <br/>
+            onChange={(e) => this.props.setFPS(parseInt(e.target.value, 10))}/> <br/>
           Steps per frame:
           <input
             type="number" step="1" min="1" max="10"
             value={this.props.spf}
-            onChange={(e) => this.props.setSPF(parseInt(e.target.value))}/> <br/>
+            onChange={(e) => this.props.setSPF(parseInt(e.target.value, 10))}/> <br/>
         </InputGroup>
         <InputGroup name={"Input: "}>
           Raindrop radius:
@@ -94,8 +95,5 @@ class BoardControl extends Component {
     );
   }
 }
-
-BoardControl.propTypes = {};
-BoardControl.defaultProps = {};
 
 export default BoardControl;

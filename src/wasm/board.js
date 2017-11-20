@@ -12,6 +12,8 @@ class Table {
 
   free() {
     this.wrapper._free_table(this._table_ptr);
+    this.wrapper = undefined;
+    this._table_ptr = undefined;
   }
 }
 
@@ -38,9 +40,6 @@ class Board {
 }
 
 class RegularBoard extends Board {
-  constructor(wrapper, board_ptr) {
-    super(wrapper, board_ptr);
-  }
 
   set acceleration(acceleration) {
     this.wrapper._set_acceleration(this._board_ptr, acceleration);
@@ -54,7 +53,7 @@ class RegularBoard extends Board {
 class Patch extends Table {
   constructor(wrapper, table_ptr, data_ptr) {
     super(wrapper, table_ptr, data_ptr);
-    this.data_ptr = data_ptr;
+    this._data_ptr = data_ptr;
   }
 
   /** @target {Table} table */
@@ -64,7 +63,8 @@ class Patch extends Table {
 
   free() {
     super.free();
-    this.wrapper.Module._free(this.data_ptr);
+    this.wrapper.Module._free(this._data_ptr);
+    this._data_ptr = undefined;
   }
 }
 
@@ -99,6 +99,35 @@ class Image {
     const imageData = new ImageData(imageArray, this.size.x, this.size.y);
     context.putImageData(imageData, 0, 0);
   }
+
+  free() {
+    this.wrapper._free_image(this._image_ptr);
+    this.wrapper = undefined;
+    this.size = undefined;
+    this._image_ptr = undefined;
+  }
+}
+
+class Palette {
+  constructor(wrapper, data_ptr, palette_ptr, size) {
+    this.wrapper = wrapper;
+    this._data_ptr = data_ptr;
+    this._palette_ptr = palette_ptr;
+    this.size = size;
+  }
+
+  free() {
+    this.wrapper._free_palette(this._palette_ptr);
+    this.wrapper.Module._free(this._data_ptr);
+    this.wrapper = undefined;
+    this._data_ptr = undefined;
+    this._palette_ptr = undefined;
+    this.size = undefined;
+  }
+
+  draw(table, image) {
+    this.wrapper._draw_with_palette(table._table_ptr, image._image_ptr, this._palette_ptr);
+  }
 }
 
 export class Wrapper {
@@ -121,8 +150,12 @@ export class Wrapper {
     this._normalize = this.Module.cwrap('normalize', null, ['number']);
     this._make_table = this.Module.cwrap('make_table', 'number', ['number', 'number', 'number']); //xsize, ysize, *values
     this._free_table = this.Module.cwrap('free_table', null, ['number']);
+    this._free_image = this.Module.cwrap('free_image', null, ['number']);
     this._apply_patch = this.Module.cwrap('apply_patch', null, ['number', 'number', 'number', 'number', 'number']);
 
+    this._make_palette = this.Module.cwrap('make_palette', 'number', ['number', 'number']);
+    this._free_palette = this.Module.cwrap('free_palette', null, ['number']);
+    this._draw_with_palette = this.Module.cwrap('draw_with_palette', null, ['number', 'number', 'number']);
 
     this.makeRegularBoard = this.makeRegularBoard.bind(this);
     this.makeImage = this.makeImage.bind(this);
@@ -144,6 +177,19 @@ export class Wrapper {
     const table_ptr = this._make_table(xsize, ysize, data_ptr);
     return new Patch(this, table_ptr, data_ptr);
   };
+
+  makeRadialPatch(radius, fun) {
+    const view = Wrapper.makeRadialArray(radius, fun);
+    const ptr = this.allocateFloats(view);
+    const table_ptr = this._make_table(radius * 2 + 1, radius * 2 + 1, ptr);
+    return new RadialPatch(this, table_ptr, ptr, radius);
+  }
+
+  makePalette(colors) {
+    const data_ptr = this.allocateColors(colors);
+    const palette_ptr = this._make_palette(colors.length, data_ptr);
+    return new Palette(this, data_ptr, palette_ptr, colors.length);
+  }
 
   static makeRadialArray(radius, fun) {
     const size = radius * 2 + 1;
@@ -170,12 +216,18 @@ export class Wrapper {
     return ptr;
   };
 
-  makeRadialPatch(radius, fun) {
-    const view = Wrapper.makeRadialArray(radius, fun);
-    const ptr = this.allocateFloats(view);
-    const table_ptr = this._make_table(radius * 2 + 1, radius * 2 + 1, ptr);
-    return new RadialPatch(this, table_ptr, ptr, radius);
+  allocateColors(colors) {
+    const ptr = this.Module._malloc(colors.length * 4);
+    const array = new Uint8ClampedArray(this.Module.HEAPU8.buffer, ptr, colors.length * 4);
+    for (let i = 0; i < colors.length; i++) {
+      array[i*4] = colors[i].r;
+      array[i*4+1] = colors[i].g;
+      array[i*4+2] = colors[i].b;
+      array[i*4+3] = 255;
+    }
+    return ptr;
   }
+
 }
 
   

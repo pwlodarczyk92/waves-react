@@ -3,6 +3,7 @@ import {point} from "../utils/point";
 import {Clock} from "./Clock";
 import {Wrapper} from "../wasm/board";
 import {poissrand} from "../utils/poisson";
+import {RGB} from "../utils/color";
 
 class App extends Component {
   constructor(props) {
@@ -34,10 +35,11 @@ class App extends Component {
     this.wrapper = new Wrapper(this.props.Module);
     this.board = this.wrapper.makeRegularBoard(this.props.size, this.props.timestep, this.props.acceleration, this.props.damping);
     this.image = this.wrapper.makeImage(this.props.size);
+    this.palette = this.wrapper.makePalette(App.colorsList([RGB.fromText("red"), RGB.fromText("black"), RGB.fromText("blue")]));
 
-    this.movePatch = this.wrapper.makeRadialPatch(this.props.moveRadius, this.radfun);
-    this.pressPatch = this.wrapper.makeRadialPatch(this.props.pressRadius, this.radfun);
-    this.rainPatch = this.wrapper.makeRadialPatch(this.props.rainRadius, this.radfun);
+    this.movePatch = this.wrapper.makeRadialPatch(this.props.moveRadius, App.radfun);
+    this.pressPatch = this.wrapper.makeRadialPatch(this.props.pressRadius, App.radfun);
+    this.rainPatch = this.wrapper.makeRadialPatch(this.props.rainRadius, App.radfun);
 
     /*this.memtest = [];
     for (let i = 0; i < 10000; i++) {
@@ -69,7 +71,8 @@ class App extends Component {
       for (let i = 0; i < this.props.spf; i++)
         this.increment();
 
-    this.image.draw(this.board.deflectionTable);
+    //this.image.draw(this.board.deflectionTable);
+    this.palette.draw(this.board.deflectionTable, this.image);
     this.image.toContext(this.ref.getContext("2d"));
   }
 
@@ -148,20 +151,29 @@ class App extends Component {
       this.board.damping = nextProps.damping;
     if (nextProps.moveRadius !== this.props.moveRadius) {
       this.movePatch.free();
-      this.movePatch = this.wrapper.makeRadialPatch(nextProps.moveRadius, this.radfun);
+      this.movePatch = this.wrapper.makeRadialPatch(nextProps.moveRadius, App.radfun);
     }
     if (nextProps.pressRadius !== this.props.pressRadius) {
       this.pressPatch.free();
-      this.pressPatch = this.wrapper.makeRadialPatch(nextProps.pressRadius, this.radfun);
+      this.pressPatch = this.wrapper.makeRadialPatch(nextProps.pressRadius, App.radfun);
     }
     if (nextProps.rainRadius !== this.props.rainRadius) {
       this.rainPatch.free();
-      this.rainPatch = this.wrapper.makeRadialPatch(nextProps.rainRadius, this.radfun);
+      this.rainPatch = this.wrapper.makeRadialPatch(nextProps.rainRadius, App.radfun);
     }
   }
 
-  radfun(dp, radius) {
+  static radfun(dp, radius) {
     return 0.5*(Math.cos(Math.PI * dp.norm() / radius) + 1);
+  }
+
+  static colorsList(colors) {
+    const result = [];
+    const len = 256;
+    for (let curr = 0; curr < colors.length - 1; curr++)
+      for (let i = 0; i <= len; i++)
+        result.push(colors[curr].mix(i / len, colors[curr+1]));
+    return result;
   }
 
   render() {
