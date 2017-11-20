@@ -1,72 +1,76 @@
 import PropTypes from 'prop-types';
-const protoPoint = {
-
+class Point {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  
   add(other, scalar = 1) {
     return point(this.x + scalar * other.x, this.y + scalar * other.y);
-  },
+  }
 
   sub(other, scalar = 1) {
     return point(this.x - scalar * other.x, this.y - scalar * other.y);
-  },
+  }
 
   mul(scalar, secondscalar) {
     if (secondscalar === undefined) {
       secondscalar = scalar;
     }
     return point(this.x * scalar, this.y * secondscalar);
-  },
+  }
 
   div(scalar, secondscalar) {
     if (secondscalar === undefined) {
       secondscalar = scalar;
     }
     return point(this.x / scalar, this.y / secondscalar);
-  },
+  }
 
   max(other) {
     return point(Math.max(this.x, other.x), Math.max(this.y, other.y));
-  },
+  }
 
   min(other) {
     return point(Math.min(this.x, other.x), Math.min(this.y, other.y));
-  },
+  }
 
   scale(scalar, relative = point(0, 0)) {
     return this.sub(relative).mul(scalar).add(relative);
-  },
+  }
   affine(scalar, other) {
     return this.mul(1 - scalar).add(other, scalar);
-  },
+  }
 
   norm(relative = point(0, 0)) {
     const diff = this.sub(relative);
     return Math.sqrt(diff.x * diff.x + diff.y * diff.y);
-  },
+  }
 
   normal(relative = point(0, 0), scale=1.0) {
     const diff = this.sub(relative);
     const norm = Math.sqrt(diff.x * diff.x + diff.y * diff.y);
     return this.scale(scale/norm, relative);
-  },
+  }
 
   dot(other) {
     return this.x * other.x + this.y * other.y;
-  },
+  }
   cross(other) {
     return this.x * other.y - this.y * other.x;
-  },
+  }
   round() {
     return point(Math.round(this.x), Math.round(this.y));
-  },
+  }
   floor() {
     return point(Math.floor(this.x), Math.floor(this.y));
-  },
+  }
   ceil() {
     return point(Math.ceil(this.x), Math.ceil(this.y));
-  },
+  }
   random() {
     return point(Math.random()*this.x, Math.random()*this.y);
-  },
+  }
 
   inConcave(cycle) {
     let angle = 0;
@@ -77,7 +81,7 @@ const protoPoint = {
       lastvect = nextvect;
     }
     return Math.abs(angle) > Math.PI;
-  },
+  }
 
   inConvex(cycle) {
     console.log(cycle);
@@ -93,38 +97,31 @@ const protoPoint = {
         return false;
     }
     return true;
-  },
+  }
 
-  rot: function(angle, origin = point(0, 0)) {
+  rot(angle, origin = point(0, 0)) {
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
     const p = this.sub(origin);
     const r = point(p.x*cos - p.y*sin, p.x*sin + p.y*cos);
     return r.add(origin);
-  },
+  }
 
   toString() {
     return "x: " + this.x + ", y: " + this.y;
-  },
+  }
 
   moveTo(context) {
     context.moveTo(this.x, this.y);
-  },
+  }
   lineTo(context) {
     context.lineTo(this.x, this.y);
-  },
+  }
   circle(context, radius) {
     context.beginPath();
     context.arc(this.x, this.y, radius, 0, 2 * Math.PI);
   }
-};
-
-function Point(x, y) {
-  this.x = x;
-  this.y = y;
 }
-
-Object.assign(Point.prototype, protoPoint);
 
 function point(x, y) {
   return new Point(x, y);

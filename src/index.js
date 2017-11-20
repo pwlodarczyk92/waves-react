@@ -6,7 +6,14 @@ import './index.css';
 import {createStore} from 'redux';
 import {Provider, connect} from 'react-redux';
 import {main} from "./features/reducers";
-import {setAcceleration, setDamping, setFPS, setSPF, setTimestep, toggleRain} from "./features/actions";
+import {
+  setAcceleration, setDamping, setDPS, setFPS, setMoveForce, setMoveRadius, setPressForce, setPressRadius, setRainForce,
+  setRainRadius, setSPF,
+  setTimestep,
+  togglePaused,
+  toggleRain,
+  toggleTrace
+} from "./features/actions";
 import BoardControl from "./components/BoardControl";
 import {point} from "./utils/point";
 
@@ -18,24 +25,41 @@ let store = createStore(rootReducer);
 
 
 function mapState(state) {
-  console.log(state.fps);
   return {
-    rain: state.rain_toggle,
+    rain: state.rain,
+    paused: state.paused,
+    trace: state.trace,
     timestep: state.timestep,
     fps: state.fps,
     spf: state.spf,
+    dps: state.dps,
     acceleration: state.acceleration,
-    damping: state.damping
+    damping: state.damping,
+    rainRadius: state.rainRadius,
+    moveRadius: state.moveRadius,
+    pressRadius: state.pressRadius,
+    rainForce: state.rainForce,
+    pressForce: state.pressForce,
+    moveForce: state.moveForce,
   }
 }
 function mapDispatch(dispatch) {
   return {
     toggleRain: (toggle) => dispatch(toggleRain(toggle)),
+    togglePaused: (toggle) => dispatch(togglePaused(toggle)),
+    toggleTrace: (toggle) => dispatch(toggleTrace(toggle)),
     setTimestep: (timestep) => dispatch(setTimestep(timestep)),
     setFPS: (fps) => dispatch(setFPS(fps)),
-    setSPF: (SPF) => dispatch(setSPF(SPF)),
+    setSPF: (spf) => dispatch(setSPF(spf)),
+    setDPS: (dps) => dispatch(setDPS(dps)),
     setAcceleration: (acceleration) => dispatch(setAcceleration(acceleration)),
     setDamping: (acceleration) => dispatch(setDamping(acceleration)),
+    setPressRadius: (radius) => dispatch(setPressRadius(radius)),
+    setMoveRadius: (radius) => dispatch(setMoveRadius(radius)),
+    setRainRadius: (radius) => dispatch(setRainRadius(radius)),
+    setPressForce: (radius) => dispatch(setPressForce(radius)),
+    setMoveForce: (radius) => dispatch(setMoveForce(radius)),
+    setRainForce: (radius) => dispatch(setRainForce(radius)),
   }
 }
 
@@ -48,9 +72,6 @@ ReactDOM.render(
       size={point(401, 301)}
       width={800}
       height={600}
-      mouseRadius={5}
-      pressRadius={10}
-      rain={true}
       Module={Module}
       onModuleLoaded={onModuleLoaded}/>
   </Provider>, document.getElementById('root')

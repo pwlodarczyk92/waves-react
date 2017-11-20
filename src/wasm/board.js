@@ -9,6 +9,10 @@ class Table {
   normalize() {
     this.wrapper._normalize(this._table_ptr);
   }
+
+  free() {
+    this.wrapper._free_table(this._table_ptr);
+  }
 }
 
 class Board {
@@ -48,36 +52,41 @@ class RegularBoard extends Board {
 }
 
 class Patch extends Table {
-  constructor(wrapper, table_ptr) {
-    super(wrapper, table_ptr);
+  constructor(wrapper, table_ptr, data_ptr) {
+    super(wrapper, table_ptr, data_ptr);
+    this.data_ptr = data_ptr;
   }
 
   /** @target {Table} table */
   applyPatch(target, point, amplitude) {
     this.wrapper._apply_patch(target._table_ptr, this._table_ptr, point.x, point.y, amplitude);
   }
+
+  free() {
+    super.free();
+    this.wrapper.Module._free(this.data_ptr);
+  }
 }
 
 class RadialPatch extends Patch {
   /** @point {Point} radius */
-  constructor(wrapper, table_ptr, radius) {
-    super(wrapper, table_ptr);
+  constructor(wrapper, table_ptr, data_ptr, radius) {
+    super(wrapper, table_ptr, data_ptr);
     this.radius = radius;
   }
 
   /** @target {Table} table */
   /** @point {Point} point */
   applyPatch(target, point, amplitude) {
-    this.wrapper._apply_patch(target._table_ptr, this._table_ptr, point.x-this.radius, point.y-this.radius, amplitude);
+    this.wrapper._apply_patch(target._table_ptr, this._table_ptr, point.x - this.radius, point.y - this.radius, amplitude);
   }
 }
 
 class Image {
   constructor(wrapper, size) {
     this.wrapper = wrapper;
+    this.size = size;
     this._image_ptr = this.wrapper._make_image(size.x, size.y);
-    this.imageArray = new Uint8ClampedArray(this.wrapper.Module.HEAPU8.buffer, this._image_ptr, size.x * size.y * 4);
-    this.imageData = new ImageData(this.imageArray, size.x, size.y);
   }
 
   /** @target {Table} table */
@@ -86,13 +95,14 @@ class Image {
   }
 
   toContext(context) {
-    context.putImageData(this.imageData, 0, 0);
+    const imageArray = new Uint8ClampedArray(this.wrapper.Module.HEAPU8.buffer, this._image_ptr, this.size.x * this.size.y * 4);
+    const imageData = new ImageData(imageArray, this.size.x, this.size.y);
+    context.putImageData(imageData, 0, 0);
   }
 }
 
 export class Wrapper {
   constructor(Module) {
-    console.log(Module);
     this.Module = Module;
 
     this._velocity_patch = this.Module.cwrap('velocity_table', 'number', ['number']);
@@ -104,75 +114,68 @@ export class Wrapper {
     this._make_regular_board = this.Module.cwrap('make_regular_board', 'number', ['number', 'number', 'number', 'number', 'number']);
     this._set_acceleration = this.Module.cwrap('set_acceleration', null, ['number', 'number']);
     this._set_damping = this.Module.cwrap('set_damping', null, ['number', 'number']);
-    this.makeRegularBoard = function (size, timestep, acceleration, damping) {
-      const board_ptr = this._make_regular_board(size.x, size.y, timestep, acceleration, damping);
-      return new RegularBoard(this, board_ptr);
-    };
 
     this._make_image = this.Module.cwrap('make_image', 'number', ['number', 'number']); //xsize, ysize
     this._draw_table = this.Module.cwrap('draw_table', null, ['number', 'number']);
-    this.makeImage = function (size) {
-      return new Image(this, size);
-    };
 
     this._normalize = this.Module.cwrap('normalize', null, ['number']);
     this._make_table = this.Module.cwrap('make_table', 'number', ['number', 'number', 'number']); //xsize, ysize, *values
+    this._free_table = this.Module.cwrap('free_table', null, ['number']);
     this._apply_patch = this.Module.cwrap('apply_patch', null, ['number', 'number', 'number', 'number', 'number']);
-    this.makePatch = function (xsize, ysize, data_ptr) {
-      const table_ptr = this._make_table(xsize, ysize, data_ptr);
-      return new Patch(this, table_ptr);
-    };
 
-    this.allocateFloats = function (view) {
-      const bytes = view.length * view.BYTES_PER_ELEMENT;
-      const ptr = this.Module._malloc(bytes);
-      const heap = new Float32Array(this.Module.HEAPU32.buffer, ptr, bytes);
-      heap.set(view);
-      return ptr;
-    };
 
-    this.makeRadialArray = function (radius, fun) {
-      const size = radius * 2 + 1;
-      const view = new Float32Array(size * size);
-      for (let dx = -radius; dx <= radius; dx++) {
-        for (let dy = -radius; dy <= radius; dy++) {
-          const dp = point(dx, dy);
-          const p = dp.add(point(radius, radius));
-          if (dp.norm() <= radius) {
-            view[size * p.y + p.x] = fun(dp, radius);
-          }
-          else
-            view[size * p.y + p.x] = 0;
+    this.makeRegularBoard = this.makeRegularBoard.bind(this);
+    this.makeImage = this.makeImage.bind(this);
+    this.allocateFloats = this.allocateFloats.bind(this);
+    this.makePatch = this.makePatch.bind(this);
+    this.makeRadialPatch = this.makeRadialPatch.bind(this);
+  }
+
+  makeRegularBoard(size, timestep, acceleration, damping) {
+    const board_ptr = this._make_regular_board(size.x, size.y, timestep, acceleration, damping);
+    return new RegularBoard(this, board_ptr);
+  };
+
+  makeImage(size) {
+    return new Image(this, size);
+  };
+
+  makePatch(xsize, ysize, data_ptr) {
+    const table_ptr = this._make_table(xsize, ysize, data_ptr);
+    return new Patch(this, table_ptr, data_ptr);
+  };
+
+  static makeRadialArray(radius, fun) {
+    const size = radius * 2 + 1;
+    const view = new Float32Array(size * size);
+    for (let dx = -radius; dx <= radius; dx++) {
+      for (let dy = -radius; dy <= radius; dy++) {
+        const dp = point(dx, dy);
+        const p = dp.add(point(radius, radius));
+        if (dp.norm() <= radius) {
+          view[size * p.y + p.x] = fun(dp, radius);
         }
+        else
+          view[size * p.y + p.x] = 0;
       }
-      return view;
-    };
-
-    this.makeRadialPatch = function (radius, fun) {
-      const view = this.makeRadialArray(radius, fun);
-      const ptr = this.allocateFloats(view);
-      const table_ptr = this._make_table(radius * 2 + 1, radius * 2 + 1, ptr);
-      return new RadialPatch(this, table_ptr, radius);
-    };
-  }
-}
-
-function radialPatch(radius) {
-  const size = radius*2+1;
-  const view = new Float32Array(size * size);
-  const factor = 4/(radius * radius);
-  for (let dx = -radius; dx <= radius; dx++) {
-    for (let dy = -radius; dy <= radius; dy++) {
-      const dp = point(dx, dy);
-      const p = dp.add(point(radius, radius));
-      if (dp.norm() <= radius)
-        view[size * p.y + p.x] = factor * (Math.cos(Math.PI * dp.norm() / radius) + 1);
-      else
-        view[size * p.y + p.x] = 0;
     }
+    return view;
   }
 
-  return view;
+  allocateFloats(view) {
+    const bytes = view.length * view.BYTES_PER_ELEMENT;
+    const ptr = this.Module._malloc(bytes);
+    const heap = new Float32Array(this.Module.HEAPU32.buffer, ptr, view.length);
+    heap.set(view);
+    return ptr;
+  };
+
+  makeRadialPatch(radius, fun) {
+    const view = Wrapper.makeRadialArray(radius, fun);
+    const ptr = this.allocateFloats(view);
+    const table_ptr = this._make_table(radius * 2 + 1, radius * 2 + 1, ptr);
+    return new RadialPatch(this, table_ptr, ptr, radius);
+  }
 }
 
   

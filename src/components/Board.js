@@ -2,16 +2,15 @@ import React, { Component } from 'react';
 import {point} from "../utils/point";
 import {Clock} from "./Clock";
 import {Wrapper} from "../wasm/board";
+import {poissrand} from "../utils/poisson";
 
 class App extends Component {
   constructor(props) {
     super(props);
 
-    this.ready = this.ready.bind(this);
     this.saveModule = this.saveModule.bind(this);
     this.saveRef = this.saveRef.bind(this);
-
-    this.start = this.start.bind(this);
+    this.ready = this.ready.bind(this);
     this.step = this.step.bind(this);
 
     this.applyMove = this.applyMove.bind(this);
@@ -22,79 +21,88 @@ class App extends Component {
     this.canvasPos = this.canvasPos.bind(this);
 
     this.ref = null;
-    this.lastTime = new Date().getTime();
-    this.iters = 0;
+    this.moduleLoaded = false;
+
+    this.lastRealTime = new Date().getTime();
+    this.lastTime = 0;
+    this.frames = 0;
     this.props.onModuleLoaded(this.saveModule);
   }
 
   saveModule() {
     this.moduleLoaded = true;
-
     this.wrapper = new Wrapper(this.props.Module);
     this.board = this.wrapper.makeRegularBoard(this.props.size, this.props.timestep, this.props.acceleration, this.props.damping);
     this.image = this.wrapper.makeImage(this.props.size);
 
-    const radfun = (dp, radius) => 0.5*(Math.cos(Math.PI * dp.norm() / radius) + 1);
-    this.movePatch = this.wrapper.makeRadialPatch(this.props.mouseRadius, radfun);
-    this.pressPatch = this.wrapper.makeRadialPatch(this.props.pressRadius, radfun);
+    this.movePatch = this.wrapper.makeRadialPatch(this.props.moveRadius, this.radfun);
+    this.pressPatch = this.wrapper.makeRadialPatch(this.props.pressRadius, this.radfun);
+    this.rainPatch = this.wrapper.makeRadialPatch(this.props.rainRadius, this.radfun);
 
-    this.start();
+    /*this.memtest = [];
+    for (let i = 0; i < 10000; i++) {
+      this.memtest.push(this.wrapper.makeRadialPatch(this.props.pressRadius, radfun));
+    }*/
   }
 
   saveRef(ref) {
     this.ref = ref;
-    if (ref !== null) {
-      this.ctx = ref.getContext("2d");
-      this.start();
-    }
-    else {
-      this.stop();
-    }
   }
 
   ready() {
     return this.moduleLoaded && this.ref
   }
 
-  start() {
-    if (this.ready())
-      this.forceUpdate();
-  }
-
   step() {
-    this.iters += 1;
-    if (this.iters % this.props.fps === 0) {
-      const newTime = new Date().getTime();
-      console.log((newTime - this.lastTime));
-      this.lastTime = newTime;
+    if (!this.ready())
+      return;
+
+    this.frames += 1;
+    if (this.frames % this.props.fps === 0) {
+      const newRealTime = new Date().getTime();
+      console.log((newRealTime - this.lastRealTime));
+      this.lastRealTime = newRealTime;
       this.board.deflectionTable.normalize();
     }
 
-    for (let i = 0; i < this.props.spf; i++)
-      this.incr();
+    if(!this.props.paused)
+      for (let i = 0; i < this.props.spf; i++)
+        this.increment();
 
     this.image.draw(this.board.deflectionTable);
-    this.image.toContext(this.ctx);
+    this.image.toContext(this.ref.getContext("2d"));
   }
 
-  incr() {
-    //const p = this.props.size.mul(0.5, 0.5).floor().sub(point(this.mouseRadius, this.mouseRadius));
+  increment() {
+    this.board.increment();
+    if (this.props.rain && this.props.timestep > 0) {
+      const lambda = this.props.timestep * this.props.dps / this.props.fps;
+      const drops = poissrand(lambda);
+      for (let i = 0; i < drops; i++)
+        this.applyRain(this.props.size.random().floor());
+    }
+
+    //const p = this.props.size.mul(0.5, 0.5).floor().sub(point(this.moveRadius, this.moveRadius));
     //const amplitude = this.props.timestep*4;
     //const phase = this.get_time(this.board_ptr)*0.04;
     //this.apply(this.deflection_ptr, this.move_ptr, p.x, p.y, Math.sin(phase)*amplitude);
-    this.board.increment();
+
+  }
+
+  applyRain(pos) {
+    this.rainPatch.applyPatch(this.board.deflectionTable, pos, this.props.rainForce);
   }
 
   applyPress(pos) {
-    this.pressPatch.applyPatch(this.board.deflectionTable, pos, this.props.pressRadius);
+    this.pressPatch.applyPatch(this.board.deflectionTable, pos, this.props.pressForce);
   }
 
   applyMove(pos) {
-    this.movePatch.applyPatch(this.board.deflectionTable, pos, 1);
+    this.movePatch.applyPatch(this.board.deflectionTable, pos, this.props.moveForce);
   }
 
   onMouseMove(event) {
-    if (!this.moduleLoaded || !this.ref)
+    if (!this.ready() || !this.props.trace)
       return;
 
     const newPos = this.canvasPos(event, this.ref);
@@ -132,14 +140,28 @@ class App extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log(nextProps);
-    console.log(this.props);
     if (nextProps.timestep !== this.props.timestep)
       this.board.timestep = nextProps.timestep;
     if (nextProps.acceleration !== this.props.acceleration)
       this.board.acceleration = nextProps.acceleration;
     if (nextProps.damping !== this.props.damping)
       this.board.damping = nextProps.damping;
+    if (nextProps.moveRadius !== this.props.moveRadius) {
+      this.movePatch.free();
+      this.movePatch = this.wrapper.makeRadialPatch(nextProps.moveRadius, this.radfun);
+    }
+    if (nextProps.pressRadius !== this.props.pressRadius) {
+      this.pressPatch.free();
+      this.pressPatch = this.wrapper.makeRadialPatch(nextProps.pressRadius, this.radfun);
+    }
+    if (nextProps.rainRadius !== this.props.rainRadius) {
+      this.rainPatch.free();
+      this.rainPatch = this.wrapper.makeRadialPatch(nextProps.rainRadius, this.radfun);
+    }
+  }
+
+  radfun(dp, radius) {
+    return 0.5*(Math.cos(Math.PI * dp.norm() / radius) + 1);
   }
 
   render() {
@@ -159,18 +181,9 @@ class App extends Component {
             border: 0
           }}
         />
-        {
-          !this.ready() ? null :
-            <Clock
-              delay={1000 / this.props.fps}
-              function={this.step}/>
-        }
-        {
-          !this.props.rain ? null :
-              <Clock
-                delay={1000 / 3}
-                function={() => {this.applyPress(this.props.size.random().floor());}}/>
-        }
+        <Clock
+          delay={1000 / this.props.fps}
+          function={this.step}/>
       </div>
     );
   }
