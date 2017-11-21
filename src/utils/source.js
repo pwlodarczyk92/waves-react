@@ -21,7 +21,7 @@ class Source {
   }
 
   value(time) {
-    return Math.sin(time*Math.PI*2/this.period);
+    return Math.sin(time*Math.PI*2/this.period)*(1+Math.cos(2*Math.PI*(time/this.lifetime-0.5)));
   }
 
   isAlive() {

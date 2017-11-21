@@ -26,7 +26,6 @@ class BoardControl extends Component {
               type="color"
               value={RGB.build(this.props.lowColor).hex()}
               onChange={(e) => this.props.setColor(RGB.fromText(e.target.value), LOW_COLOR)}/> <br/>
-            Mouse trace:
           </InputGroup>
           <InputGroup name={"Basic: "}>
             Timestep:

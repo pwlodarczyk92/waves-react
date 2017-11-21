@@ -62,9 +62,9 @@ class Patch extends Table {
   }
 
   free() {
-    super.free();
     this.wrapper.Module._free(this._data_ptr);
     this._data_ptr = undefined;
+    super.free();
   }
 }
 

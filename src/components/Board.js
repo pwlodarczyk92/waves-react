@@ -93,7 +93,7 @@ class App extends Component {
       const value = source.integrateValue(this.props.timestep);
       if (source.isAlive())
         aliveSources.push(source);
-      this.movePatch.applyPatch(this.board.deflectionTable, source.pos, value);
+      this.pressPatch.applyPatch(this.board.deflectionTable, source.pos, value);
     }
     this.sources = aliveSources;
     //const p = this.props.size.mul(0.5, 0.5).floor().sub(point(this.moveRadius, this.moveRadius));
@@ -142,6 +142,7 @@ class App extends Component {
       return;
     const newPos = this.canvasPos(event, this.ref);
     this.applyPress(newPos);
+    //this.sources.push(new Source(newPos, 60, 60, 20));
   }
 
   canvasPos(event, canvas) {
