@@ -1,7 +1,7 @@
 import {
   SET_TIMESTEP, TOGGLE_RAIN, SET_FPS, SET_SPF, SET_ACCELERATION, SET_DAMPING, TOGGLE_PAUSED,
   TOGGLE_TRACE, SET_DPS, SET_RAIN_RADIUS, SET_MOVE_RADIUS, SET_PRESS_RADIUS, SET_RAIN_FORCE, SET_PRESS_FORCE,
-  SET_MOVE_FORCE
+  SET_MOVE_FORCE, SET_COLOR, LOW_COLOR, HIGH_COLOR, ZERO_COLOR
 } from './actions';
 
 const initial = {
@@ -19,7 +19,10 @@ const initial = {
   pressRadius: 10,
   rainForce: 5,
   moveForce: 0.5,
-  pressForce: 15
+  pressForce: 15,
+  lowColor: {r: 255, g: 0, b: 0},
+  highColor: {r: 0, g: 0, b: 255},
+  zeroColor: {r: 0, g: 0, b: 0}
 };
 
 function main(state = initial, action) {
@@ -54,6 +57,17 @@ function main(state = initial, action) {
       return {...state, pressForce: action.force};
     case SET_MOVE_FORCE:
       return {...state, moveForce: action.force};
+    case SET_COLOR:
+      switch (action.value) {
+        case LOW_COLOR:
+          return {...state, lowColor: action.color};
+        case HIGH_COLOR:
+          return {...state, highColor: action.color};
+        case ZERO_COLOR:
+          return {...state, zeroColor: action.color};
+        default:
+          throw new Error("illegal state value");
+      }
     default:
       return state;
   }

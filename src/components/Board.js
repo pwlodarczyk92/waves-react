@@ -4,6 +4,7 @@ import {Clock} from "./Clock";
 import {Wrapper} from "../wasm/board";
 import {poissrand} from "../utils/poisson";
 import {RGB} from "../utils/color";
+import {Source} from "../utils/source";
 
 class App extends Component {
   constructor(props) {
@@ -35,11 +36,12 @@ class App extends Component {
     this.wrapper = new Wrapper(this.props.Module);
     this.board = this.wrapper.makeRegularBoard(this.props.size, this.props.timestep, this.props.acceleration, this.props.damping);
     this.image = this.wrapper.makeImage(this.props.size);
-    this.palette = this.wrapper.makePalette(App.colorsList([RGB.fromText("red"), RGB.fromText("black"), RGB.fromText("blue")]));
+    this.palette = this.wrapper.makePalette(App.colorsList([this.props.lowColor, this.props.zeroColor, this.props.highColor]));
 
     this.movePatch = this.wrapper.makeRadialPatch(this.props.moveRadius, App.radfun);
     this.pressPatch = this.wrapper.makeRadialPatch(this.props.pressRadius, App.radfun);
     this.rainPatch = this.wrapper.makeRadialPatch(this.props.rainRadius, App.radfun);
+    this.sources = [];
 
     /*this.memtest = [];
     for (let i = 0; i < 10000; i++) {
@@ -85,6 +87,15 @@ class App extends Component {
         this.applyRain(this.props.size.random().floor());
     }
 
+    const aliveSources = [];
+    while (this.sources.length > 0) {
+      const source = this.sources.pop();
+      const value = source.integrateValue(this.props.timestep);
+      if (source.isAlive())
+        aliveSources.push(source);
+      this.movePatch.applyPatch(this.board.deflectionTable, source.pos, value);
+    }
+    this.sources = aliveSources;
     //const p = this.props.size.mul(0.5, 0.5).floor().sub(point(this.moveRadius, this.moveRadius));
     //const amplitude = this.props.timestep*4;
     //const phase = this.get_time(this.board_ptr)*0.04;
@@ -161,6 +172,13 @@ class App extends Component {
       this.rainPatch.free();
       this.rainPatch = this.wrapper.makeRadialPatch(nextProps.rainRadius, App.radfun);
     }
+    if (!RGB.equals(nextProps.lowColor, this.props.lowColor) ||
+        !RGB.equals(nextProps.zeroColor, this.props.zeroColor) ||
+        !RGB.equals(nextProps.highColor, this.props.highColor)) {
+      const colorsList = App.colorsList([nextProps.lowColor, nextProps.zeroColor, nextProps.highColor]);
+      this.palette.free();
+      this.palette = this.wrapper.makePalette(colorsList);
+    }
   }
 
   static radfun(dp, radius) {
@@ -170,9 +188,12 @@ class App extends Component {
   static colorsList(colors) {
     const result = [];
     const len = 256;
-    for (let curr = 0; curr < colors.length - 1; curr++)
+    for (let curr = 0; curr < colors.length - 1; curr++) {
+      const lastCol = RGB.build(colors[curr]);
+      const nextCol = RGB.build(colors[curr+1]);
       for (let i = 0; i <= len; i++)
-        result.push(colors[curr].mix(i / len, colors[curr+1]));
+        result.push(lastCol.mix(i / len, nextCol));
+    }
     return result;
   }
 

@@ -13,6 +13,11 @@ export const SET_PRESS_RADIUS = "SET_PRESS_RADIUS";
 export const SET_RAIN_FORCE = "SET_RAIN_FORCE";
 export const SET_MOVE_FORCE = "SET_MOVE_FORCE";
 export const SET_PRESS_FORCE = "SET_PRESS_FORCE";
+export const SET_COLOR = "SET_COLOR";
+export const LOW_COLOR = "LOW_COLOR";
+export const HIGH_COLOR = "HIGH_COLOR";
+export const ZERO_COLOR = "ZERO_COLOR";
+
 
 export function toggleRain(toggle) {
   return {
@@ -62,14 +67,12 @@ export function setAcceleration(acceleration) {
     acceleration
   }
 }
-
 export function setDamping(damping) {
   return {
     type: SET_DAMPING,
     damping
   }
 }
-
 export function setRainRadius(radius) {
   return {
     type: SET_RAIN_RADIUS,
@@ -104,5 +107,12 @@ export function setPressForce(force) {
   return {
     type: SET_PRESS_FORCE,
     force
+  }
+}
+export function setColor(color, value) {
+  return {
+    type: SET_COLOR,
+    color,
+    value
   }
 }

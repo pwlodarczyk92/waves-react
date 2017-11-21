@@ -8,6 +8,12 @@ class RGB {
     document.body.removeChild(probe);
     return new RGB(colors[0], colors[1], colors[2]);
   }
+  static build(obj) {
+	  return new RGB(obj.r, obj.g, obj.b);
+  }
+  static equals(a, b) {
+	  return a.r === b.r && a.g === b.g && a.b === b.b;
+  }
   constructor(r, g, b) {
     this.r = r;
     this.g = g;
@@ -25,6 +31,7 @@ class RGB {
       this.b * revfrac + other.b * fraction
 		);
   }
+
 }
 
 export {RGB}

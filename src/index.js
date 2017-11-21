@@ -7,7 +7,8 @@ import {createStore} from 'redux';
 import {Provider, connect} from 'react-redux';
 import {main} from "./features/reducers";
 import {
-  setAcceleration, setDamping, setDPS, setFPS, setMoveForce, setMoveRadius, setPressForce, setPressRadius, setRainForce,
+  setAcceleration, setColor, setDamping, setDPS, setFPS, setMoveForce, setMoveRadius, setPressForce, setPressRadius,
+  setRainForce,
   setRainRadius, setSPF,
   setTimestep,
   togglePaused,
@@ -41,6 +42,9 @@ function mapState(state) {
     rainForce: state.rainForce,
     pressForce: state.pressForce,
     moveForce: state.moveForce,
+    lowColor: state.lowColor,
+    highColor: state.highColor,
+    zeroColor: state.zeroColor
   }
 }
 function mapDispatch(dispatch) {
@@ -60,6 +64,7 @@ function mapDispatch(dispatch) {
     setPressForce: (radius) => dispatch(setPressForce(radius)),
     setMoveForce: (radius) => dispatch(setMoveForce(radius)),
     setRainForce: (radius) => dispatch(setRainForce(radius)),
+    setColor: (color, value) => dispatch(setColor(color, value))
   }
 }
 
