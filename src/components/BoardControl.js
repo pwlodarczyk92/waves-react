@@ -12,7 +12,7 @@ class BoardControl extends Component {
       <div style={{display: "flex"}}>
         <Board {...this.props}/>
         <div style={{flexGrow: 1}}>
-          <BoardColors {...this.props}/>
+          <BoardColors {...{...this.props, ...this.props.colors}}/>
           <BoardParams {...this.props}/>
           <MouseParams {...this.props}/>
           <RainParams {...this.props}/>

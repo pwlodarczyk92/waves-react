@@ -42,9 +42,11 @@ function mapState(state) {
     rainForce: state.rainForce,
     pressForce: state.pressForce,
     moveForce: state.moveForce,
-    lowColor: state.lowColor,
-    highColor: state.highColor,
-    zeroColor: state.zeroColor
+    colors: {
+      lowColor: state.lowColor,
+      highColor: state.highColor,
+      zeroColor: state.zeroColor
+    }
   }
 }
 function mapDispatch(dispatch) {

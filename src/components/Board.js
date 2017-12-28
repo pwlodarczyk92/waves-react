@@ -5,6 +5,8 @@ import {Wrapper} from "../wasm/board";
 import {poissrand} from "../utils/poisson";
 import {RGB} from "../utils/color";
 import {Source} from "../utils/source";
+import Colors from "./helpers/Colors";
+import Effect from "./helpers/Effect";
 
 class App extends Component {
   constructor(props) {
@@ -36,11 +38,11 @@ class App extends Component {
     this.wrapper = new Wrapper(this.props.Module);
     this.board = this.wrapper.makeRegularBoard(this.props.size, this.props.timestep, this.props.acceleration, this.props.damping);
     this.image = this.wrapper.makeImage(this.props.size);
-    this.palette = this.wrapper.makePalette(App.colorsList([this.props.lowColor, this.props.zeroColor, this.props.highColor]));
+    this.palette = new Colors(this.wrapper, this.props.colors);
 
-    this.movePatch = this.wrapper.makeRadialPatch(this.props.moveRadius, App.radfun);
-    this.pressPatch = this.wrapper.makeRadialPatch(this.props.pressRadius, App.radfun);
-    this.rainPatch = this.wrapper.makeRadialPatch(this.props.rainRadius, App.radfun);
+    this.movePatch = new Effect(this.wrapper, this.props.moveRadius);
+    this.pressPatch = new Effect(this.wrapper, this.props.pressRadius);
+    this.rainPatch = new Effect(this.wrapper, this.props.rainRadius);
     this.sources = [];
 
     /*this.memtest = [];
@@ -74,7 +76,7 @@ class App extends Component {
         this.increment();
 
     //this.image.draw(this.board.deflectionTable);
-    this.palette.draw(this.board.deflectionTable, this.image);
+    this.palette.get().draw(this.board.deflectionTable, this.image);
     this.image.toContext(this.ref.getContext("2d"));
   }
 
@@ -104,15 +106,15 @@ class App extends Component {
   }
 
   applyRain(pos) {
-    this.rainPatch.applyPatch(this.board.deflectionTable, pos, this.props.rainForce);
+    this.rainPatch.get().applyPatch(this.board.deflectionTable, pos, this.props.rainForce);
   }
 
   applyPress(pos) {
-    this.pressPatch.applyPatch(this.board.deflectionTable, pos, this.props.pressForce);
+    this.pressPatch.get().applyPatch(this.board.deflectionTable, pos, this.props.pressForce);
   }
 
   applyMove(pos) {
-    this.movePatch.applyPatch(this.board.deflectionTable, pos, this.props.moveForce);
+    this.movePatch.get().applyPatch(this.board.deflectionTable, pos, this.props.moveForce);
   }
 
   onMouseMove(event) {
@@ -161,25 +163,10 @@ class App extends Component {
       this.board.acceleration = nextProps.acceleration;
     if (nextProps.damping !== this.props.damping)
       this.board.damping = nextProps.damping;
-    if (nextProps.moveRadius !== this.props.moveRadius) {
-      this.movePatch.free();
-      this.movePatch = this.wrapper.makeRadialPatch(nextProps.moveRadius, App.radfun);
-    }
-    if (nextProps.pressRadius !== this.props.pressRadius) {
-      this.pressPatch.free();
-      this.pressPatch = this.wrapper.makeRadialPatch(nextProps.pressRadius, App.radfun);
-    }
-    if (nextProps.rainRadius !== this.props.rainRadius) {
-      this.rainPatch.free();
-      this.rainPatch = this.wrapper.makeRadialPatch(nextProps.rainRadius, App.radfun);
-    }
-    if (!RGB.equals(nextProps.lowColor, this.props.lowColor) ||
-        !RGB.equals(nextProps.zeroColor, this.props.zeroColor) ||
-        !RGB.equals(nextProps.highColor, this.props.highColor)) {
-      const colorsList = App.colorsList([nextProps.lowColor, nextProps.zeroColor, nextProps.highColor]);
-      this.palette.free();
-      this.palette = this.wrapper.makePalette(colorsList);
-    }
+    this.movePatch.update(nextProps.moveRadius);
+    this.pressPatch.update(nextProps.pressRadius);
+    this.rainPatch.update(nextProps.rainRadius);
+    this.palette.update(nextProps.colors);
   }
 
   static radfun(dp, radius) {
