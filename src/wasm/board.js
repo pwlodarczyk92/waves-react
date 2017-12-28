@@ -2,12 +2,19 @@ import {point} from "../utils/point";
 
 class Table {
   constructor(wrapper, table_ptr) {
+    this.normalize = this.normalize.bind(this);
+    this.affine = this.affine.bind(this);
+    this.free = this.free.bind(this);
     this.wrapper = wrapper;
     this._table_ptr = table_ptr;
   }
 
   normalize() {
     this.wrapper._normalize(this._table_ptr);
+  }
+
+  affine(point, a, b) {
+    this.wrapper._affine(this._table_ptr, point.x, point.y, a, b);
   }
 
   free() {
@@ -18,12 +25,13 @@ class Table {
 }
 
 class Board {
-  constructor(wrapper, board_ptr) {
+  constructor(wrapper, board_ptr, size) {
+    this.increment = this.increment.bind(this);
     this.wrapper = wrapper;
     this._board_ptr = board_ptr;
+    this.size = size;
     this.velocityTable = new Table(this.wrapper, this.wrapper._velocity_patch(board_ptr));
     this.deflectionTable = new Table(this.wrapper, this.wrapper._deflection_patch(board_ptr));
-    this.increment = this.increment.bind(this);
   }
 
   set timestep(timestep) {
@@ -53,6 +61,8 @@ class RegularBoard extends Board {
 class Patch extends Table {
   constructor(wrapper, table_ptr, data_ptr) {
     super(wrapper, table_ptr, data_ptr);
+    this.applyPatch = this.applyPatch.bind(this);
+    this.free = this.free.bind(this);
     this._data_ptr = data_ptr;
   }
 
@@ -72,6 +82,7 @@ class RadialPatch extends Patch {
   /** @point {Point} radius */
   constructor(wrapper, table_ptr, data_ptr, radius) {
     super(wrapper, table_ptr, data_ptr);
+    this.applyPatch = this.applyPatch.bind(this);
     this.radius = radius;
   }
 
@@ -148,6 +159,7 @@ export class Wrapper {
     this._draw_table = this.Module.cwrap('draw_table', null, ['number', 'number']);
 
     this._normalize = this.Module.cwrap('normalize', null, ['number']);
+    this._affine = this.Module.cwrap('affine', null, ['number', 'number', 'number', 'number']); //table, x, y, a, b
     this._make_table = this.Module.cwrap('make_table', 'number', ['number', 'number', 'number']); //xsize, ysize, *values
     this._free_table = this.Module.cwrap('free_table', null, ['number']);
     this._free_image = this.Module.cwrap('free_image', null, ['number']);
@@ -166,7 +178,7 @@ export class Wrapper {
 
   makeRegularBoard(size, timestep, acceleration, damping) {
     const board_ptr = this._make_regular_board(size.x, size.y, timestep, acceleration, damping);
-    return new RegularBoard(this, board_ptr);
+    return new RegularBoard(this, board_ptr, size);
   };
 
   makeImage(size) {
