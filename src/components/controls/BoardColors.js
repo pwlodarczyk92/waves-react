@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import {RGB} from "../../utils/color";
 import {HIGH_COLOR, LOW_COLOR, ZERO_COLOR} from "../../features/actions";
 import InputGroup from "../InputGroup";

@@ -1,5 +1,3 @@
-import React, {Component} from 'react';
-
 class Effect {
     constructor(wrapper, radius) {
     this.update = this.update.bind(this);

@@ -1,4 +1,3 @@
-import React, {Component} from 'react';
 import {RGB} from "../../utils/color";
 
 class Colors {

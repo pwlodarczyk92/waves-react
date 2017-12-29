@@ -7,16 +7,15 @@ import {createStore} from 'redux';
 import {Provider, connect} from 'react-redux';
 import {main} from "./features/reducers";
 import {
-  setAcceleration, setColor, setDamping, setDPS, setFPS, setMoveForce, setMoveRadius, setPressForce, setPressRadius,
-  setRainForce,
-  setRainRadius, setSPF,
-  setTimestep,
+  setAcceleration, setColor, setDamping, setDPS, setFPS, setPress, setRain, setSPF,
+  setTimestep, setTrace,
   togglePaused,
   toggleRain,
   toggleTrace
 } from "./features/actions";
 import BoardControl from "./components/BoardControl";
 import {point} from "./utils/point";
+import {setForce, setRadius} from "./features/patch/actions";
 
 function rootReducer(state, action) {
   return main(state, action);
@@ -27,21 +26,18 @@ let store = createStore(rootReducer);
 
 function mapState(state) {
   return {
-    rain: state.rain,
+    rainToggle: state.rainToggle,
+    traceToggle: state.traceToggle,
     paused: state.paused,
-    trace: state.trace,
     timestep: state.timestep,
     fps: state.fps,
     spf: state.spf,
     dps: state.dps,
     acceleration: state.acceleration,
     damping: state.damping,
-    rainRadius: state.rainRadius,
-    moveRadius: state.moveRadius,
-    pressRadius: state.pressRadius,
-    rainForce: state.rainForce,
-    pressForce: state.pressForce,
-    moveForce: state.moveForce,
+    rain: state.rain,
+    trace: state.trace,
+    press: state.press,
     colors: {
       lowColor: state.lowColor,
       highColor: state.highColor,
@@ -60,12 +56,13 @@ function mapDispatch(dispatch) {
     setDPS: (dps) => dispatch(setDPS(dps)),
     setAcceleration: (acceleration) => dispatch(setAcceleration(acceleration)),
     setDamping: (acceleration) => dispatch(setDamping(acceleration)),
-    setPressRadius: (radius) => dispatch(setPressRadius(radius)),
-    setMoveRadius: (radius) => dispatch(setMoveRadius(radius)),
-    setRainRadius: (radius) => dispatch(setRainRadius(radius)),
-    setPressForce: (radius) => dispatch(setPressForce(radius)),
-    setMoveForce: (radius) => dispatch(setMoveForce(radius)),
-    setRainForce: (radius) => dispatch(setRainForce(radius)),
+    patchActions: {
+      radius: (radius) => setRadius(radius),
+      force: (force) => setForce(force)
+    },
+    setRain: (action) => dispatch(setRain(action)),
+    setTrace: (action) => dispatch(setTrace(action)),
+    setPress: (action) => dispatch(setPress(action)),
     setColor: (color, value) => dispatch(setColor(color, value))
   }
 }

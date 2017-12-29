@@ -5,9 +5,8 @@ import {Wrapper} from "../wasm/board";
 import Colors from "./helpers/Colors";
 import Effect from "./helpers/Effect";
 import Rain from "./helpers/Rain";
-import Trace from "./helpers/Trace";
+import Trace from "./helpers/Tracer";
 import Trigger from "./helpers/Trigger";
-import Sources from "./helpers/Sources";
 
 class App extends Component {
   constructor(props) {
@@ -41,13 +40,13 @@ class App extends Component {
     this.image = this.wrapper.makeImage(this.props.size);
     this.palette = new Colors(this.wrapper, this.props.colors);
 
-    this.movePatch = new Effect(this.wrapper, this.props.moveRadius);
-    this.pressPatch = new Effect(this.wrapper, this.props.pressRadius);
-    this.rainPatch = new Effect(this.wrapper, this.props.rainRadius);
+    this.movePatch = new Effect(this.wrapper, this.props.trace.radius);
+    this.pressPatch = new Effect(this.wrapper, this.props.press.radius);
+    this.rainPatch = new Effect(this.wrapper, this.props.rain.radius);
 
     this.rain = new Rain(this.board.size, this.applyRain, this.props.dps);
     this.tracer = new Trace();
-    this.logger = new Trigger(this.props.fps, (time, fps) => console.log(`Frame rate: ${fps / time}`));
+    this.logger = new Trigger(this.props.fps, (time, fps) => console.log(`Frame rate: ${1000 * fps / time}`));
     this.normalizer = new Trigger(this.props.fps, () => this.board.deflectionTable.normalize());
     //this.sources = new Sources((point, amplitude, phase) => this.board.deflectionTable.affine(point, 1, amplitude*Math.sin(phase)));
   }
@@ -77,20 +76,20 @@ class App extends Component {
 
   increment() {
     this.board.increment();
-    if (this.props.rain)
+    if (this.props.rainToggle)
       this.rain.apply(this.props.timestep);
   }
 
   applyRain(pos) {
-    this.rainPatch.get().applyPatch(this.board.deflectionTable, pos, this.props.rainForce);
+    this.rainPatch.get().applyPatch(this.board.deflectionTable, pos, this.props.rain.force);
   }
 
   applyPress(pos) {
-    this.pressPatch.get().applyPatch(this.board.deflectionTable, pos, this.props.pressForce);
+    this.pressPatch.get().applyPatch(this.board.deflectionTable, pos, this.props.press.force);
   }
 
   applyMove(pos) {
-    this.movePatch.get().applyPatch(this.board.deflectionTable, pos, this.props.moveForce);
+    this.movePatch.get().applyPatch(this.board.deflectionTable, pos, this.props.trace.force);
   }
 
   onMouseMove(event) {
@@ -125,9 +124,9 @@ class App extends Component {
     this.board.timestep = nextProps.timestep;
     this.board.acceleration = nextProps.acceleration;
     this.board.damping = nextProps.damping;
-    this.movePatch.update(nextProps.moveRadius);
-    this.pressPatch.update(nextProps.pressRadius);
-    this.rainPatch.update(nextProps.rainRadius);
+    this.movePatch.update(nextProps.trace.radius);
+    this.pressPatch.update(nextProps.press.radius);
+    this.rainPatch.update(nextProps.rain.radius);
     this.palette.update(nextProps.colors);
     this.logger.update(nextProps.fps);
   }

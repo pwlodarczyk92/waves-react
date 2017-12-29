@@ -1,6 +1,3 @@
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-
 class Trigger {
   constructor(fps, action) {
     this.update = this.update.bind(this);

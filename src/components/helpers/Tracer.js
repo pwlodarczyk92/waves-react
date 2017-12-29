@@ -1,7 +1,4 @@
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-
-class Trace {
+class Tracer {
   constructor() {
     this.lastPosition = null;
     this.lastTime = null;
@@ -23,7 +20,4 @@ class Trace {
   }
 }
 
-Trace.propTypes = {};
-Trace.defaultProps = {};
-
-export default Trace;
+export default Tracer;

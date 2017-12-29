@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import InputGroup from "../InputGroup";
 
 class BoardParams extends Component {
