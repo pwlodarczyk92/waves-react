@@ -25,7 +25,4 @@ class SimulationParams extends Component {
   }
 }
 
-SimulationParams.propTypes = {};
-SimulationParams.defaultProps = {};
-
 export default SimulationParams;

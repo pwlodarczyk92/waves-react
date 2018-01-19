@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import {point} from "../../utils/point";
 import InputGroup from "../helpers/InputGroup";
 
@@ -42,7 +41,7 @@ class SourceCreator extends Component {
           <button className="btn btn-sm btn-primary" onClick={()=>{
             this.props.addSource(
               (this.props.sourceKey == null ? this.start.toString() : this.props.sourceKey),
-              point(parseInt(this.xref.value), parseInt(this.yref.value)),
+              point(parseInt(this.xref.value, 10), parseInt(this.yref.value, 10)),
               parseFloat(this.amplitude.value),
               parseFloat(this.period.value),
               parseFloat(this.shift.value));
@@ -55,8 +54,5 @@ class SourceCreator extends Component {
     );
   }
 }
-
-SourceCreator.propTypes = {};
-SourceCreator.defaultProps = {};
 
 export default SourceCreator;

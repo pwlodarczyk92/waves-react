@@ -1,4 +1,6 @@
 import PropTypes from 'prop-types';
+import {number, obj} from "./checks";
+
 class Point {
   constructor(x, y) {
     this.x = x;
@@ -121,14 +123,12 @@ class Point {
   }
 }
 
-function point(x, y) {
+export function point(x, y) {
   return new Point(x, y);
 }
 point.NEG_INFTY = point(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
 point.POS_INFTY = point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-let pointType = PropTypes.instanceOf(Point);
 
-export {
-  point,
-  pointType
-};
+export const pointType = PropTypes.instanceOf(Point);
+export const pointT = obj({x: number, y: number});
+

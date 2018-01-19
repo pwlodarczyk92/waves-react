@@ -1,4 +1,6 @@
-class RGB {
+import {number, obj} from "./checks";
+
+export class RGB {
 	static fromText(arg) {
     const probe = document.createElement('div');
     probe.style.color = arg;
@@ -31,7 +33,6 @@ class RGB {
       this.b * revfrac + other.b * fraction
 		);
   }
-
 }
 
-export {RGB}
+export const rgbT = obj({r: number, g: number, b: number});

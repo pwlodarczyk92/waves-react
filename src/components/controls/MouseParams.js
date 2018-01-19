@@ -28,7 +28,4 @@ class MouseParams extends Component {
   }
 }
 
-MouseParams.propTypes = {};
-MouseParams.defaultProps = {};
-
 export default MouseParams;

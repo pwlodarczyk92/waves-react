@@ -23,7 +23,4 @@ class Trigger {
   }
 }
 
-Trigger.propTypes = {};
-Trigger.defaultProps = {};
-
 export default Trigger;

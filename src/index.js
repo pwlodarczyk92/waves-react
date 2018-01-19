@@ -1,11 +1,8 @@
-/* global Module, onModuleLoaded */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {createStore} from 'redux';
 import {Provider, connect} from 'react-redux';
 import {BrowserRouter, Route} from 'react-router-dom';
-import {point} from "./utils/point";
 
 import './index.css';
 import {main} from "./features/reducers";
@@ -19,12 +16,16 @@ import {
   toggleTrace
 } from "./features/actions";
 
-import BoardControl from "./components/BoardControl";
 import URLBoard from "./components/URLBoard";
 import Pusher from "./components/Pusher";
 
 function rootReducer(state, action) {
-  return main(state, action);
+  try {
+    return main(state, action);
+  } catch(err) {
+    console.error(err.message);
+    return state;
+  }
 }
 
 let store = createStore(rootReducer);

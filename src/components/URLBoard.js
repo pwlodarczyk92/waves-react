@@ -1,7 +1,6 @@
 /* global Module, onModuleLoaded */
 
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import BoardControl from "./BoardControl";
 import {point} from "../utils/point";
 
@@ -19,7 +18,5 @@ class URLBoard extends Component {
   }
 }
 
-URLBoard.propTypes = {};
-URLBoard.defaultProps = {};
 
 export default URLBoard;

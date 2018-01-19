@@ -27,7 +27,4 @@ class RainParams extends Component {
   }
 }
 
-RainParams.propTypes = {};
-RainParams.defaultProps = {};
-
 export default RainParams;

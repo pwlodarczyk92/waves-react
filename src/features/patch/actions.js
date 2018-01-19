@@ -1,3 +1,5 @@
+import {any, is, number, obj} from "../../utils/checks";
+
 export const SET_FORCE = "SET_FORCE";
 export const SET_RADIUS = "SET_RADIUS";
 

@@ -6,8 +6,11 @@ import {
 import * as patch from "./patch/reducers";
 import {smallPatch} from "./patch/reducers";
 import {bigPatch} from "./patch/reducers";
+import {all, any, bool, geq, integer, number, obj, positive, postcheck, values} from "../utils/checks";
+import {patchT} from "./patch/reducers";
+import {rgbT} from "../utils/color";
 
-const initial = {
+export const initialState = {
   timestep: 0.25,
   acceleration: 1.0,
   damping:0.001,
@@ -33,7 +36,7 @@ const initial = {
   sources: {}
 };
 
-function main(state = initial, action) {
+function main(state = initialState, action) {
   switch (action.type) {
     case SET_STATE:
       return action.state;
@@ -88,5 +91,41 @@ function main(state = initial, action) {
       return state;
   }
 }
+
+export const stateT = obj({
+  timestep: number,
+  acceleration: number,
+  damping: number,
+  normalize: bool,
+
+  paused: bool,
+  fps: geq(1),
+  spf: all(integer, positive),
+
+  rainToggle: bool,
+  dps: positive,
+  rain: patchT,
+
+  traceToggle: bool,
+  trace: patchT,
+
+  press: patchT,
+
+  lowColor: rgbT,
+  highColor: rgbT,
+  zeroColor: rgbT,
+
+  sources: values(obj({
+    amplitude: number,
+    period: positive,
+    shift: number,
+    position: obj({
+      x: all(integer, geq(0)),
+      y: all(integer, geq(0)),
+    }),
+  }))
+});
+
+main = postcheck(stateT, main);
 
 export {main};

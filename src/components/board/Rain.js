@@ -17,7 +17,5 @@ class Rain {
   }
 }
 
-Rain.propTypes = {};
-Rain.defaultProps = {};
 
 export default Rain;

@@ -27,7 +27,4 @@ class BoardColors extends Component {
   }
 }
 
-BoardColors.propTypes = {};
-BoardColors.defaultProps = {};
-
 export default BoardColors;

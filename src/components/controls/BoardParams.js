@@ -30,7 +30,4 @@ class BoardParams extends Component {
   }
 }
 
-BoardParams.propTypes = {};
-BoardParams.defaultProps = {};
-
 export default BoardParams;

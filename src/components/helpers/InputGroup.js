@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import './InputGroup.css';
 
 class InputGroup extends Component {
   constructor(props) {

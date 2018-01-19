@@ -1,9 +1,0 @@
-.fieldsetContainer {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 400ms linear;
-}
-
-.toggleGroup:checked ~ .fieldsetContainer {
-    max-height: 200px;
-}

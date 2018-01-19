@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
+import {Component} from 'react';
+import {initialState} from "../features/reducers";
 
 class Pusher extends Component {
   componentWillMount() {
@@ -7,7 +7,7 @@ class Pusher extends Component {
     if (params.length === 0)
       return;
     const urlState = JSON.parse(decodeURIComponent(params));
-    this.props.setState(urlState);
+    this.props.setState({...initialState, ...urlState});
   }
   componentWillReceiveProps(nextProps) {
     if (this.props.state === nextProps.state)
@@ -19,7 +19,5 @@ class Pusher extends Component {
   }
 }
 
-Pusher.propTypes = {};
-Pusher.defaultProps = {};
 
 export default Pusher;

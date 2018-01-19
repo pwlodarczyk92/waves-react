@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import InputGroup from "../helpers/InputGroup";
-import SourceCreator from "./SourceCreator";
 
 class SourcesList extends Component {
   render() {
@@ -24,8 +22,5 @@ class SourcesList extends Component {
     </div>);
   }
 }
-
-SourcesList.propTypes = {};
-SourcesList.defaultProps = {};
 
 export default SourcesList;
