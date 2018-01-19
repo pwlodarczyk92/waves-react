@@ -1,33 +1,41 @@
 import {
   SET_TIMESTEP, TOGGLE_RAIN, SET_FPS, SET_SPF, SET_ACCELERATION, SET_DAMPING, TOGGLE_PAUSED,
   TOGGLE_TRACE, SET_DPS, SET_COLOR, LOW_COLOR, HIGH_COLOR, ZERO_COLOR, SET_RAIN, SET_TRACE, SET_PRESS, ADD_SOURCE,
-  REMOVE_SOURCE
+  REMOVE_SOURCE, SET_STATE
 } from './actions';
 import * as patch from "./patch/reducers";
 import {smallPatch} from "./patch/reducers";
 import {bigPatch} from "./patch/reducers";
 
 const initial = {
-  rainToggle: false,
-  traceToggle: true,
-  paused: false,
   timestep: 0.25,
   acceleration: 1.0,
   damping:0.001,
+
+  paused: false,
   fps: 60,
   spf: 4,
-  dps: 1,
+
+  rainToggle: false,
+  dps: 10,
   rain: bigPatch,
+
+  traceToggle: true,
   trace: smallPatch,
+
   press: bigPatch,
+
   lowColor: {r: 255, g: 0, b: 0},
   highColor: {r: 0, g: 0, b: 255},
   zeroColor: {r: 0, g: 0, b: 0},
+
   sources: {}
 };
 
 function main(state = initial, action) {
   switch (action.type) {
+    case SET_STATE:
+      return action.state;
     case REMOVE_SOURCE: {
       const newSources = {...state.sources};
       delete newSources[action.key];

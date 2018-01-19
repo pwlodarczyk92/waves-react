@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import InputGroup from "./InputGroup";
+import InputGroup from "../helpers/InputGroup";
 
 class SimulationParams extends Component {
   render() {

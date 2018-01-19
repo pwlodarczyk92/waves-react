@@ -2,21 +2,26 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import {createStore} from 'redux';
 import {Provider, connect} from 'react-redux';
+import {BrowserRouter, Route} from 'react-router-dom';
+import {point} from "./utils/point";
+
+import './index.css';
 import {main} from "./features/reducers";
+import {setForce, setRadius} from "./features/patch/actions";
 import {
   addSource, removeSource,
-  setAcceleration, setColor, setDamping, setDPS, setFPS, setPress, setRain, setSPF,
+  setAcceleration, setColor, setDamping, setDPS, setFPS, setPress, setRain, setSPF, setState,
   setTimestep, setTrace,
   togglePaused,
   toggleRain,
   toggleTrace
 } from "./features/actions";
+
 import BoardControl from "./components/BoardControl";
-import {point} from "./utils/point";
-import {setForce, setRadius} from "./features/patch/actions";
+import URLBoard from "./components/URLBoard";
+import Pusher from "./components/Pusher";
 
 function rootReducer(state, action) {
   return main(state, action);
@@ -47,6 +52,8 @@ function mapState(state) {
     }
   }
 }
+
+
 function mapDispatch(dispatch) {
   return {
     toggleRain: (toggle) => dispatch(toggleRain(toggle)),
@@ -71,16 +78,17 @@ function mapDispatch(dispatch) {
   }
 }
 
-let ReduxApp = connect(mapState, mapDispatch)(BoardControl);
 
+let ReduxApp = connect(mapState, mapDispatch)(URLBoard);
+let ConnectedPusher = connect((state) => ({state}), (dispatch) => ({setState: (state) => dispatch(setState(state))}))(Pusher);
 
 ReactDOM.render(
   <Provider store={store}>
-    <ReduxApp
-      size={point(401, 301)}
-      width={800}
-      height={600}
-      Module={Module}
-      onModuleLoaded={onModuleLoaded}/>
+    <BrowserRouter>
+      <div>
+        <Route path="/" component={ConnectedPusher}/>
+        <Route path="/" component={ReduxApp}/>
+      </div>
+    </BrowserRouter>
   </Provider>, document.getElementById('root')
 );

@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {point} from "../../utils/point";
-import InputGroup from "./InputGroup";
+import InputGroup from "../helpers/InputGroup";
 
 class SourceCreator extends Component {
   constructor(props) {

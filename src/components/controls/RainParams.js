@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import InputGroup from "./InputGroup";
+import InputGroup from "../helpers/InputGroup";
 import PatchControl from "./PatchParams";
 
 class RainParams extends Component {

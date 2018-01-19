@@ -1,11 +1,12 @@
 import {Source} from './Source';
 
 class Sources {
-  constructor(effect, remove) {
+  constructor(sources, effect, remove) {
     this.sources = {};
     this.effect = effect;
     this.remove = remove;
     this.dyingSources = [];
+    this.update(sources);
   }
 
   increment(time, timestep) {
@@ -39,6 +40,7 @@ class Sources {
   }
 
   update(sources) {
+    console.log(sources);
     if (this.sources === sources)
       return;
     const allKeys = new Set(Object.keys(this.sources));
@@ -48,6 +50,8 @@ class Sources {
       if (!sources[key]) {
         this.kill(key);
       } else if (!this.sources[key]) {
+        console.log("new: ");
+        console.log(sources[key]);
         this.sources[key] = {
           data: sources[key],
           source: new Source(sources[key].period, sources[key].shift),

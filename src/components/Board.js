@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import {point} from "../utils/point";
-import {Clock} from "./Clock";
+import {Clock} from "./helpers/Clock";
 import {Wrapper} from "../wasm/board";
-import Colors from "./helpers/Colors";
-import Effect from "./helpers/Effect";
-import Rain from "./helpers/Rain";
-import Trace from "./helpers/Tracer";
-import Trigger from "./helpers/Trigger";
-import Sources from "./helpers/Sources";
+import Colors from "./board/Colors";
+import Effect from "./board/Effect";
+import Rain from "./board/Rain";
+import Trace from "./board/Tracer";
+import Trigger from "./board/Trigger";
+import Sources from "./board/Sources";
 
 class App extends Component {
   constructor(props) {
@@ -50,6 +50,7 @@ class App extends Component {
     this.logger = new Trigger(this.props.fps, (time, fps) => console.log(`Frame rate: ${1000 * fps / time}`));
     this.normalizer = new Trigger(this.props.fps, () => this.board.deflectionTable.normalize());
     this.sources = new Sources(
+      this.props.sources,
       (point, amplitude, phase) => this.board.deflectionTable.affine(point, 1, amplitude*Math.sin(phase)),
       this.props.removeSource
     );
@@ -132,6 +133,14 @@ class App extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    if (this.moduleLoaded)
+      this.readProps(nextProps);
+    else
+      this.propsWaiting = nextProps;
+  }
+
+  readProps(nextProps) {
+    this.propsWaiting = null;
     this.rain.dps = nextProps.dps;
     this.board.timestep = nextProps.timestep;
     this.board.acceleration = nextProps.acceleration;
@@ -145,6 +154,9 @@ class App extends Component {
   }
 
   render() {
+    if (this.propsWaiting != null && this.moduleLoaded)
+      this.readProps(this.propsWaiting);
+
     return (
       <div>
         <canvas

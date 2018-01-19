@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import InputGroup from "./InputGroup";
+import InputGroup from "../helpers/InputGroup";
 import PatchControl, {bigPatchInput, smallPatchInput} from "./PatchParams";
 
 class MouseParams extends Component {

@@ -16,7 +16,7 @@ export const HIGH_COLOR = "HIGH_COLOR";
 export const ZERO_COLOR = "ZERO_COLOR";
 export const ADD_SOURCE = "ADD_SOURCE";
 export const REMOVE_SOURCE = "REMOVE_SOURCE";
-
+export const SET_STATE = "SET_STATE";
 
 export function toggleRain(toggle) {
   return {
@@ -113,5 +113,11 @@ export function removeSource(key) {
   return {
     type: REMOVE_SOURCE,
     key
+  }
+}
+export function setState(state) {
+  return {
+    type: SET_STATE,
+    state
   }
 }
