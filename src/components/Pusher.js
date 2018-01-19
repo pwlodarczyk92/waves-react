@@ -12,7 +12,11 @@ class Pusher extends Component {
   componentWillReceiveProps(nextProps) {
     if (this.props.state === nextProps.state)
       return;
-    this.props.history.push("/?s=" + JSON.stringify(nextProps.state));
+    const diff = {};
+    for (const [key, val] of Object.entries(nextProps.state))
+      if (initialState[key] !== val)
+        diff[key] = val;
+    this.props.history.push("/?s=" + JSON.stringify(diff));
   }
   render() {
     return null;
