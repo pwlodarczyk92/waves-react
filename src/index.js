@@ -13,7 +13,7 @@ import {setForce, setRadius} from "./features/patch/actions";
 import {
   addSource, removeSource,
   setAcceleration, setColor, setDamping, setDPS, setFPS, setPress, setRain, setSPF, setState,
-  setTimestep, setTrace,
+  setTimestep, setTrace, toggleNormalize,
   togglePaused,
   toggleRain,
   toggleTrace
@@ -32,6 +32,7 @@ let store = createStore(rootReducer);
 
 function mapState(state) {
   return {
+    normalize: state.normalize,
     rainToggle: state.rainToggle,
     traceToggle: state.traceToggle,
     paused: state.paused,
@@ -56,6 +57,7 @@ function mapState(state) {
 
 function mapDispatch(dispatch) {
   return {
+    toggleNormalize: (toggle) => dispatch(toggleNormalize(toggle)),
     toggleRain: (toggle) => dispatch(toggleRain(toggle)),
     togglePaused: (toggle) => dispatch(togglePaused(toggle)),
     toggleTrace: (toggle) => dispatch(toggleTrace(toggle)),

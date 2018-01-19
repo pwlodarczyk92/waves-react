@@ -1,7 +1,7 @@
 import {
   SET_TIMESTEP, TOGGLE_RAIN, SET_FPS, SET_SPF, SET_ACCELERATION, SET_DAMPING, TOGGLE_PAUSED,
   TOGGLE_TRACE, SET_DPS, SET_COLOR, LOW_COLOR, HIGH_COLOR, ZERO_COLOR, SET_RAIN, SET_TRACE, SET_PRESS, ADD_SOURCE,
-  REMOVE_SOURCE, SET_STATE
+  REMOVE_SOURCE, SET_STATE, TOGGLE_NORMALIZE
 } from './actions';
 import * as patch from "./patch/reducers";
 import {smallPatch} from "./patch/reducers";
@@ -11,6 +11,7 @@ const initial = {
   timestep: 0.25,
   acceleration: 1.0,
   damping:0.001,
+  normalize: true,
 
   paused: false,
   fps: 60,
@@ -52,6 +53,8 @@ function main(state = initial, action) {
       return {...state, traceToggle: action.toggle};
     case TOGGLE_PAUSED:
       return {...state, paused: action.toggle};
+    case TOGGLE_NORMALIZE:
+      return {...state, normalize: action.toggle};
     case SET_TIMESTEP:
       return {...state, timestep: action.timestep};
     case SET_FPS:
@@ -67,7 +70,6 @@ function main(state = initial, action) {
     case SET_RAIN:
       return {...state, rain: patch.main(state.rain, action.action)};
     case SET_TRACE:
-      console.log(patch.main(state.trace, action.action));
       return {...state, trace: patch.main(state.trace, action.action)};
     case SET_PRESS:
       return {...state, press: patch.main(state.press, action.action)};

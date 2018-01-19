@@ -5,6 +5,11 @@ class BoardParams extends Component {
   render() {
     return (
       <InputGroup name="Physics">
+        Normalize:
+        <input
+          type="checkbox"
+          checked={this.props.normalize}
+          onChange={(e) => this.props.toggleNormalize(e.target.checked)}/> <br/>
         Time step:
         <input
           type="number" step="0.01" min="-1" max="1"

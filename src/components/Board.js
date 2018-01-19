@@ -48,7 +48,7 @@ class App extends Component {
     this.rain = new Rain(this.board.size, this.applyRain, this.props.dps);
     this.tracer = new Trace();
     this.logger = new Trigger(this.props.fps, (time, fps) => console.log(`Frame rate: ${1000 * fps / time}`));
-    this.normalizer = new Trigger(this.props.fps, () => this.board.deflectionTable.normalize());
+    this.normalizer = new Trigger(this.props.fps, () => {if (this.props.normalize) this.board.deflectionTable.normalize();});
     this.sources = new Sources(
       this.props.sources,
       (point, amplitude, phase) => this.board.deflectionTable.affine(point, 1, amplitude*Math.sin(phase)),

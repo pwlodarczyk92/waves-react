@@ -17,7 +17,14 @@ export const ZERO_COLOR = "ZERO_COLOR";
 export const ADD_SOURCE = "ADD_SOURCE";
 export const REMOVE_SOURCE = "REMOVE_SOURCE";
 export const SET_STATE = "SET_STATE";
+export const TOGGLE_NORMALIZE = "TOGGLE_NORMALIZE";
 
+export function toggleNormalize(toggle) {
+  return {
+    type: TOGGLE_NORMALIZE,
+    toggle
+  }
+}
 export function toggleRain(toggle) {
   return {
     type: TOGGLE_RAIN,
