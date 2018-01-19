@@ -17,6 +17,10 @@ class Table {
     this.wrapper._affine(this._table_ptr, point.x, point.y, a, b);
   }
 
+  clear(value) {
+    this.wrapper._clear(this._table_ptr, value);
+  }
+
   free() {
     this.wrapper._free_table(this._table_ptr);
     this.wrapper = undefined;
@@ -30,8 +34,8 @@ class Board {
     this.wrapper = wrapper;
     this._board_ptr = board_ptr;
     this.size = size;
-    this.velocityTable = new Table(this.wrapper, this.wrapper._velocity_patch(board_ptr));
-    this.deflectionTable = new Table(this.wrapper, this.wrapper._deflection_patch(board_ptr));
+    this.velocityTable = new Table(this.wrapper, this.wrapper._velocity_table(board_ptr));
+    this.deflectionTable = new Table(this.wrapper, this.wrapper._deflection_table(board_ptr));
   }
 
   set timestep(timestep) {
@@ -39,7 +43,7 @@ class Board {
   }
 
   get time() {
-    this.wrapper._get_time(this._board_ptr);
+    return this.wrapper._get_time(this._board_ptr);
   }
 
   increment() {
@@ -145,8 +149,8 @@ export class Wrapper {
   constructor(Module) {
     this.Module = Module;
 
-    this._velocity_patch = this.Module.cwrap('velocity_table', 'number', ['number']);
-    this._deflection_patch = this.Module.cwrap('deflection_table', 'number', ['number']);
+    this._velocity_table = this.Module.cwrap('velocity_table', 'number', ['number']);
+    this._deflection_table = this.Module.cwrap('deflection_table', 'number', ['number']);
     this._set_timestep = this.Module.cwrap('set_timestep', null, ['number', 'number']);
     this._get_time = this.Module.cwrap('get_time', 'number', ['number']);
     this._increment = this.Module.cwrap('increment', null, ['number']);
@@ -162,6 +166,7 @@ export class Wrapper {
     this._affine = this.Module.cwrap('affine', null, ['number', 'number', 'number', 'number']); //table, x, y, a, b
     this._make_table = this.Module.cwrap('make_table', 'number', ['number', 'number', 'number']); //xsize, ysize, *values
     this._free_table = this.Module.cwrap('free_table', null, ['number']);
+    this._clear = this.Module.cwrap('clear', null, ['number', 'number']);
     this._free_image = this.Module.cwrap('free_image', null, ['number']);
     this._apply_patch = this.Module.cwrap('apply_patch', null, ['number', 'number', 'number', 'number', 'number']);
 

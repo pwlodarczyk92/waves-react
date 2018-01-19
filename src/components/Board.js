@@ -7,6 +7,7 @@ import Effect from "./helpers/Effect";
 import Rain from "./helpers/Rain";
 import Trace from "./helpers/Tracer";
 import Trigger from "./helpers/Trigger";
+import Sources from "./helpers/Sources";
 
 class App extends Component {
   constructor(props) {
@@ -48,7 +49,11 @@ class App extends Component {
     this.tracer = new Trace();
     this.logger = new Trigger(this.props.fps, (time, fps) => console.log(`Frame rate: ${1000 * fps / time}`));
     this.normalizer = new Trigger(this.props.fps, () => this.board.deflectionTable.normalize());
-    //this.sources = new Sources((point, amplitude, phase) => this.board.deflectionTable.affine(point, 1, amplitude*Math.sin(phase)));
+    this.sources = new Sources(
+      (point, amplitude, phase) => this.board.deflectionTable.affine(point, 1, amplitude*Math.sin(phase)),
+      this.props.removeSource
+    );
+
   }
 
   saveRef(ref) {
@@ -57,6 +62,12 @@ class App extends Component {
 
   ready() {
     return this.moduleLoaded && this.canvas
+  }
+
+  reset() {
+    this.board.deflectionTable.clear(0);
+    this.board.velocityTable.clear(0);
+    this.sources.clear();
   }
 
   step() {
@@ -75,6 +86,7 @@ class App extends Component {
   }
 
   increment() {
+    this.sources.increment(this.board.time, this.props.timestep);
     this.board.increment();
     if (this.props.rainToggle)
       this.rain.apply(this.props.timestep);
@@ -93,7 +105,7 @@ class App extends Component {
   }
 
   onMouseMove(event) {
-    if (!this.ready() || !this.props.trace)
+    if (!this.ready() || !this.props.traceToggle)
       return;
 
     const time = new Date().getTime();
@@ -128,6 +140,7 @@ class App extends Component {
     this.pressPatch.update(nextProps.press.radius);
     this.rainPatch.update(nextProps.rain.radius);
     this.palette.update(nextProps.colors);
+    this.sources.update(nextProps.sources);
     this.logger.update(nextProps.fps);
   }
 

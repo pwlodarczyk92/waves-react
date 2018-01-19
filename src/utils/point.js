@@ -84,8 +84,6 @@ class Point {
   }
 
   inConvex(cycle) {
-    console.log(cycle);
-    console.log(this);
     if (cycle.length < 3) return false;
     let pathvect = cycle[0].sub(cycle[cycle.length-1]);
     let thisvect = cycle[0].sub(this);

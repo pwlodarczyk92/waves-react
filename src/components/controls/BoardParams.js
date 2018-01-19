@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
-import InputGroup from "../InputGroup";
+import InputGroup from "./InputGroup";
 
 class BoardParams extends Component {
   render() {
     return (
-      <InputGroup name="Board Params: ">
-        Timestep:
+      <InputGroup name="Physics">
+        Time step:
         <input
           type="number" step="0.01" min="-1" max="1"
           value={this.props.timestep}

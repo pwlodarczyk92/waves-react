@@ -10,7 +10,7 @@ export function setForce(force) {
 
 export function setRadius(radius) {
   return {
-    type: SET_FORCE,
+    type: SET_RADIUS,
     radius
   }
 }

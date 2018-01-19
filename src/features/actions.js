@@ -14,6 +14,8 @@ export const SET_COLOR = "SET_COLOR";
 export const LOW_COLOR = "LOW_COLOR";
 export const HIGH_COLOR = "HIGH_COLOR";
 export const ZERO_COLOR = "ZERO_COLOR";
+export const ADD_SOURCE = "ADD_SOURCE";
+export const REMOVE_SOURCE = "REMOVE_SOURCE";
 
 
 export function toggleRain(toggle) {
@@ -93,5 +95,23 @@ export function setColor(color, value) {
     type: SET_COLOR,
     color,
     value
+  }
+}
+export function addSource(key, position, amplitude, period, shift) {
+  return {
+    type: ADD_SOURCE,
+    source: {
+      key,
+      position,
+      amplitude,
+      period,
+      shift
+    }
+  }
+}
+export function removeSource(key) {
+  return {
+    type: REMOVE_SOURCE,
+    key
   }
 }

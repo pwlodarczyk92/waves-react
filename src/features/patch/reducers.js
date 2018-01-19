@@ -1,6 +1,10 @@
 import {SET_FORCE, SET_RADIUS} from "./actions";
 
 function main(state, action) {
+  console.log("state");
+  console.log(state);
+  console.log("action");
+  console.log(action);
   switch (action.type) {
     case SET_FORCE:
       return {...state, force: action.force};

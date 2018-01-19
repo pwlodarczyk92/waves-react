@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
-import InputGroup from "../InputGroup";
+import InputGroup from "./InputGroup";
 import PatchControl, {bigPatchInput, smallPatchInput} from "./PatchParams";
 
 class MouseParams extends Component {
   render() {
     return (
-      <InputGroup name="Input: ">
+      <InputGroup name="Mouse control">
         Mouse trace:
         <input
           type="checkbox"

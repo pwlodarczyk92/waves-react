@@ -7,6 +7,7 @@ import {createStore} from 'redux';
 import {Provider, connect} from 'react-redux';
 import {main} from "./features/reducers";
 import {
+  addSource, removeSource,
   setAcceleration, setColor, setDamping, setDPS, setFPS, setPress, setRain, setSPF,
   setTimestep, setTrace,
   togglePaused,
@@ -38,6 +39,7 @@ function mapState(state) {
     rain: state.rain,
     trace: state.trace,
     press: state.press,
+    sources: state.sources,
     colors: {
       lowColor: state.lowColor,
       highColor: state.highColor,
@@ -63,7 +65,9 @@ function mapDispatch(dispatch) {
     setRain: (action) => dispatch(setRain(action)),
     setTrace: (action) => dispatch(setTrace(action)),
     setPress: (action) => dispatch(setPress(action)),
-    setColor: (color, value) => dispatch(setColor(color, value))
+    setColor: (color, value) => dispatch(setColor(color, value)),
+    addSource: (key, position, amplitude, period, shift) => dispatch(addSource(key, position, amplitude, period, shift)),
+    removeSource: (key) => dispatch(removeSource(key))
   }
 }
 

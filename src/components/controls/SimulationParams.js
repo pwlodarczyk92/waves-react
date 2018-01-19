@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
-import InputGroup from "../InputGroup";
+import InputGroup from "./InputGroup";
 
 class SimulationParams extends Component {
   render() {
     return (
-      <InputGroup name="Simulation rate: ">
+      <InputGroup name="Simulation rate">
         Pause:
         <input
           type="checkbox"

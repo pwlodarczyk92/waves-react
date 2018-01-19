@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
-import InputGroup from "../InputGroup";
+import InputGroup from "./InputGroup";
 import PatchControl from "./PatchParams";
 
 class RainParams extends Component {
   render() {
     return (
-      <InputGroup name="Rain Options: ">
+      <InputGroup name="Rain options">
         Rain:
         <input
           type="checkbox"

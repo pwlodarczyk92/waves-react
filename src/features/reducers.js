@@ -1,6 +1,7 @@
 import {
   SET_TIMESTEP, TOGGLE_RAIN, SET_FPS, SET_SPF, SET_ACCELERATION, SET_DAMPING, TOGGLE_PAUSED,
-  TOGGLE_TRACE, SET_DPS, SET_COLOR, LOW_COLOR, HIGH_COLOR, ZERO_COLOR, SET_RAIN, SET_TRACE, SET_PRESS
+  TOGGLE_TRACE, SET_DPS, SET_COLOR, LOW_COLOR, HIGH_COLOR, ZERO_COLOR, SET_RAIN, SET_TRACE, SET_PRESS, ADD_SOURCE,
+  REMOVE_SOURCE
 } from './actions';
 import * as patch from "./patch/reducers";
 import {smallPatch} from "./patch/reducers";
@@ -13,7 +14,7 @@ const initial = {
   timestep: 0.25,
   acceleration: 1.0,
   damping:0.001,
-  fps: 40,
+  fps: 60,
   spf: 4,
   dps: 1,
   rain: bigPatch,
@@ -21,11 +22,22 @@ const initial = {
   press: bigPatch,
   lowColor: {r: 255, g: 0, b: 0},
   highColor: {r: 0, g: 0, b: 255},
-  zeroColor: {r: 0, g: 0, b: 0}
+  zeroColor: {r: 0, g: 0, b: 0},
+  sources: {}
 };
 
 function main(state = initial, action) {
   switch (action.type) {
+    case REMOVE_SOURCE: {
+      const newSources = {...state.sources};
+      delete newSources[action.key];
+      return {...state, sources: newSources};
+    }
+    case ADD_SOURCE: {
+      const newSources = {...state.sources};
+      newSources[action.source.key] = action.source;
+      return {...state, sources: newSources};
+    }
     case TOGGLE_RAIN:
       return {...state, rainToggle: action.toggle};
     case TOGGLE_TRACE:
@@ -47,6 +59,7 @@ function main(state = initial, action) {
     case SET_RAIN:
       return {...state, rain: patch.main(state.rain, action.action)};
     case SET_TRACE:
+      console.log(patch.main(state.trace, action.action));
       return {...state, trace: patch.main(state.trace, action.action)};
     case SET_PRESS:
       return {...state, press: patch.main(state.press, action.action)};
